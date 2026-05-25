@@ -1,0 +1,86 @@
+# ============================================================
+# ONTOS Rule Engine · 一键部署
+#
+#   host:19091  ──►  frontend (nginx) ──►  backend (Spring Boot)
+#                       │                       │
+#                       │                       └─ ./data 持久化 H2
+#                       └─ /api/* 反代到 backend:8080
+#
+# 用法（首次）：
+#   docker compose up -d --build
+#
+# 之后升级（拉新代码后）：
+#   git pull && docker compose up -d --build
+#
+# 看日志：
+#   docker compose logs -f backend
+#   docker compose logs -f frontend
+#
+# 关停：
+#   docker compose down            # 保留数据卷
+#   docker compose down -v         # 连数据一起干净
+# ============================================================
+
+services:
+  # ----------------------------------------------------------
+  # Backend · Spring Boot
+  # ----------------------------------------------------------
+  backend:
+    build:
+      context: .
+      dockerfile: ontos-rule-business/Dockerfile
+    image: ontos-rule/backend:0.1.0
+    container_name: ontos-rule-backend
+    restart: unless-stopped
+    # 端口不映射到 host —— 只通过 frontend 反代对外
+    expose:
+      - "8080"
+    volumes:
+      # H2 文件库持久化（host ./data ↔ 容器 /app/data）
+      - ./data:/app/data
+    environment:
+      # JVM 内存上限（按 host 内存适当调；默认 75% 容器内存）
+      JAVA_OPTS: "-XX:MaxRAMPercentage=75 -XX:+UseG1GC -XX:+UseContainerSupport"
+      # 时区
+      TZ: Asia/Shanghai
+      # Spring profile（默认 default；上生产可换成 prod）
+      SPRING_PROFILES_ACTIVE: default
+    networks:
+      - ontos-net
+    healthcheck:
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/admin/info || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 60s
+
+  # ----------------------------------------------------------
+  # Frontend · Vue dist served by nginx + reverse proxy /api
+  # ----------------------------------------------------------
+  frontend:
+    build:
+      context: ./ontos-rule-web
+      dockerfile: Dockerfile
+    image: ontos-rule/frontend:0.1.0
+    container_name: ontos-rule-frontend
+    restart: unless-stopped
+    # ★ 对外只暴露这一个端口 —— host 19091
+    ports:
+      - "19091:80"
+    volumes:
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/ontos-rule.conf:ro
+    depends_on:
+      backend:
+        condition: service_started
+    networks:
+      - ontos-net
+    healthcheck:
+      test: ["CMD-SHELL", "wget -qO- http://localhost/healthz >/dev/null 2>&1 || exit 1"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  ontos-net:
+    driver: bridge

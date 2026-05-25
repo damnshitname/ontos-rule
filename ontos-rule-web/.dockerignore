@@ -1,0 +1,19 @@
+# 前端 build context（context: ./ontos-rule-web）
+
+node_modules/
+dist/
+.vite/
+*.tsbuildinfo
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+
+# 日志
+*.log
+npm-debug.log*

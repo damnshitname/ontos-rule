@@ -1,0 +1,44 @@
+# 全局排除（docker compose 用 . 作为后端 build context）
+
+# 构建产物
+**/target/
+**/node_modules/
+**/dist/
+**/.vite/
+*.tsbuildinfo
+
+# IDE / OS
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
+*.iml
+
+# Git
+.git/
+.gitignore
+.gitattributes
+
+# AI 工具元数据
+.claude/
+.aider*
+.cursor/
+
+# 运行时数据（H2 文件别 COPY 进镜像）
+data/
+pgdata/
+*.mv.db
+*.trace.db
+
+# 日志
+*.log
+logs/
+
+# 原型与文档（不参与镜像构建）
+ontos-rule-prototype/
+docs/
+
+# 部署相关本身不用进镜像
+deploy/
+docker-compose.yml
+*.Dockerfile

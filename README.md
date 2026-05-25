@@ -211,6 +211,7 @@ List<InvocationRecord> records = engine.recorder().recent("src-my-platform", 100
 - 📐 [架构设计](docs/architecture.md) — Core 五大组件、数据流、设计取舍
 - 📖 [操作手册](docs/usage.md) — REST API、SDK 用法、数据源注册、追溯查询、常见报错
 - 🔌 [扩展开发](docs/extending.md) — 新增 Backend、自定义 Recorder、新增 SQL 方言、扩展维度 Handler
+- 🚀 [部署手册](deploy/README.md) — Docker Compose 一键部署到服务器
 - 🤝 [贡献指南](CONTRIBUTING.md) — 开发环境、提交规范、PR 流程
 
 ---
