@@ -1,0 +1,32 @@
+{
+  "name": "ontos-rule-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "ONTOS Rule Engine 前端工程（Vue3 + Element Plus + TypeScript）",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc -b && vite build",
+    "preview": "vite preview",
+    "type-check": "vue-tsc --noEmit"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.1",
+    "axios": "^1.7.7",
+    "echarts": "^6.1.0",
+    "element-plus": "^2.8.8",
+    "pinia": "^2.2.6",
+    "vue": "^3.5.13",
+    "vue-echarts": "^8.0.1",
+    "vue-router": "^4.4.5"
+  },
+  "devDependencies": {
+    "@types/node": "^22.9.0",
+    "@vitejs/plugin-vue": "^5.2.0",
+    "typescript": "~5.6.3",
+    "unplugin-auto-import": "^0.18.4",
+    "unplugin-vue-components": "^0.27.4",
+    "vite": "^5.4.11",
+    "vue-tsc": "^2.1.10"
+  }
+}

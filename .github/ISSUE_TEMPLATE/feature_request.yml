@@ -1,0 +1,54 @@
+name: 💡 Feature Request
+description: 提一个新特性 / 改进建议
+title: "[Feature] "
+labels: ["enhancement", "triage"]
+body:
+  - type: textarea
+    id: motivation
+    attributes:
+      label: 动机 / Use Case
+      description: 你想解决什么具体问题？为什么现状不行？
+      placeholder: |
+        我们用 ONTOS 接入 Doris 时发现没有 Dialect，每次都得手动 fallback 到 JVM Backend，
+        几千万行直接 OOM。
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 方案
+      description: 你设想的实现思路（接口 / API / 配置）
+      placeholder: |
+        参考 PostgresqlDialect 实现 DorisDialect，在 SqlDialects.of() 注册 "doris" case。
+        Doris 的标识符引用、matches、startsWith 跟 MySQL 兼容，可以复用部分实现。
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 替代方案 / 现状 workaround
+      placeholder: 现在只能 ExecutionHints.jvm() 强制走 JVM Backend，但只能跑小数据。
+
+  - type: dropdown
+    id: scope
+    attributes:
+      label: 影响范围
+      options:
+        - core（破坏 RuleEngine / ExecutionBackend / Recorder 接口）
+        - core（新增 SPI / Dialect / Backend 实现）
+        - business（REST API / Domain）
+        - web（前端）
+        - docs（仅文档）
+      default: 1
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: contrib
+    attributes:
+      label: 我愿意自己提 PR
+      options:
+        - label: 是的，我打算自己实现
+        - label: 我需要更多讨论才知道怎么做

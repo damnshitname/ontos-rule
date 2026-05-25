@@ -1,0 +1,56 @@
+server:
+  port: 8080
+  servlet:
+    encoding:
+      charset: UTF-8
+      enabled: true
+      force: true
+
+spring:
+  application:
+    name: ontos-rule-business
+
+  datasource:
+    # H2 文件模式：数据持久化到 ./data/ontosrule.mv.db，重启不丢
+    # 切换为内存模式：jdbc:h2:mem:ontosrule;DB_CLOSE_DELAY=-1;MODE=PostgreSQL
+    url: jdbc:h2:file:./data/ontosrule;MODE=PostgreSQL;DB_CLOSE_DELAY=-1;AUTO_SERVER=TRUE
+    driver-class-name: org.h2.Driver
+    username: sa
+    password: ""
+
+  jpa:
+    hibernate:
+      # update：保留已有数据，仅按 Entity 改动增量更新 schema
+      # 演示/开发常用；正式生产建议改 validate + 配合 Flyway/Liquibase
+      ddl-auto: update
+    show-sql: false
+    properties:
+      hibernate:
+        format_sql: true
+        dialect: org.hibernate.dialect.H2Dialect
+
+  h2:
+    console:
+      enabled: true
+      path: /h2-console
+      settings:
+        web-allow-others: false
+
+  jackson:
+    default-property-inclusion: non_null
+    serialization:
+      write-dates-as-timestamps: false
+
+logging:
+  level:
+    root: INFO
+    com.ontos: DEBUG
+    org.springframework.web: INFO
+    org.hibernate.SQL: WARN
+
+ontos:
+  rule:
+    # 引擎默认 caller 标识——当 REST API 调用时若未带 X-Caller-Id header，默认用此
+    default-caller: src-rest-api
+    # 内存 invocation 记录上限
+    invocation-recorder-max-size: 5000

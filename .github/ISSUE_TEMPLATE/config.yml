@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 📖 操作手册
+    url: https://github.com/damnshitname/ontos-rule/blob/main/docs/usage.md
+    about: 用法、REST API、常见报错都在这里
+  - name: 🔌 扩展开发
+    url: https://github.com/damnshitname/ontos-rule/blob/main/docs/extending.md
+    about: 怎么加你自己的 Backend / Dialect / Recorder
+  - name: 🛡 安全报告
+    url: mailto:xiaoyi.he@zetatech.com.cn
+    about: 安全漏洞请私下邮件，别开 public Issue

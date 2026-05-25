@@ -1,0 +1,14 @@
+ONTOS Rule Engine
+Copyright 2026 The ONTOS Rule Engine Authors
+
+This product includes software developed by:
+- Google LLC — CEL (Common Expression Language) — Apache License 2.0
+  https://github.com/google/cel-spec
+- The Apache Software Foundation — HikariCP, etc.
+- The Spring Boot Authors — Spring Boot — Apache License 2.0
+  https://github.com/spring-projects/spring-boot
+- The H2 Group — H2 Database — MPL 2.0 / EPL 1.0
+  https://h2database.com
+- Vue.js / Element Plus / ECharts — MIT License
+
+See individual dependency LICENSE files for full text.
