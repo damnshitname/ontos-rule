@@ -1,0 +1,8 @@
+# 确保 shell 脚本即使在 Windows 上 checkout 也用 LF 行尾
+# （CRLF 会让 Linux 的 `#!/usr/bin/env bash` 找不到 `bash\r` 解释器）
+*.sh text eol=lf
+
+# 同理，Dockerfile / yaml / 其它在容器/Linux 跑的脚本类
+Dockerfile text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf

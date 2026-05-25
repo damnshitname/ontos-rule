@@ -62,7 +62,7 @@ mvn -pl ontos-rule-business spring-boot:run
 | **评分** | `GET    /api/quality-scores/latest` | 最新 5 维评分 |
 |  | `GET    /api/quality-scores/history` | 评分历史曲线 |
 | **Playground** | `POST   /api/playground/eval` | 即兴试规则（不入库） |
-| **Admin** | `GET    /api/admin/info` | 引擎自描述（含已注册维度 / 方言） |
+| **Admin** | `POST   /api/admin/reseed` | 一键清空 + 重新种入演示数据（生产建议关闭） |
 
 所有 POST 接受 `application/json`。所有调用支持 `X-Caller-Id` header，用于追溯来源；不传则用 `application/yml` 中 `default-caller`。
 
@@ -397,7 +397,7 @@ engine.eval(rule, row, ctx);
 | `CompilationException: undeclared reference to 'xxx'` | CEL 引用了变量但没声明 | 用 `engine.compile(expr, Set.of("xxx", ...))` 显式声明；或确保表达式里出现的是合法的标识符（CelCompiler 会自动从表达式正则抽变量） |
 | `executeOnSql ... TranslationException` | 某个 CEL 函数还没翻译实现 | 见 `CelToSqlTranslator` 已支持函数清单；不支持的函数走 JVM Backend |
 | `Backend SPARK 未实现批量执行` | hints.backend = SPARK 但 SparkBackend 还没做 | 改 `ExecutionHints.auto()` 或 `ExecutionHints.sql()` |
-| `未知维度 type: xxx` | business 的 `CheckSpec.type` 写错 | 看 `GET /api/admin/info` 输出的维度列表 |
+| `未知维度 type: xxx` | business 的 `CheckSpec.type` 写错 | 看 `RuleTypeRegistry` 源码确认 type 名（10 种内置见上方维度表） |
 | `range 至少需要 min 或 max 之一` | params 全空 | 至少填一个 |
 | H2 控制台连不上 | `web-allow-others: false` | 改 `application.yml` → `web-allow-others: true`（仅 dev） |
 | `Address already in use: bind` | 8080 被占 | 改 `application.yml` 里 `server.port` |

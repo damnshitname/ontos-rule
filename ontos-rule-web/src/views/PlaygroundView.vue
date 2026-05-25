@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { computed, nextTick, onBeforeUnmount, onMounted, ref } from 'vue'
+import { ElMessage } from 'element-plus'
 import { playgroundApi, type PlaygroundEvalResponse, type InvocationRecord, type InvocationStats, type BenchmarkResponse } from '@/api/playground'
 import * as echarts from 'echarts/core'
 import { BarChart } from 'echarts/charts'

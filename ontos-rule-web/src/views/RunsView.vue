@@ -135,8 +135,7 @@ onUnmounted(() => {
               <EmptyState
                 icon="◷"
                 title="还没有执行历史"
-                subtitle="一键加载演示数据后即可看到 200 条执行记录"
-                @reseeded="load"
+                subtitle="去【规则】Tab 点 [ run ] 执行一条规则；或顶栏 [↺ 重置 demo 数据] 加载演示数据"
               />
             </td>
           </tr>

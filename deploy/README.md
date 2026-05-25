@@ -116,10 +116,14 @@ curl -sI http://localhost:19091/ | head -1
 
 # 后端 API（通过 nginx 反代）
 curl -s http://localhost:19091/api/rules | head -200
-# 期望：JSON 数组（首次可能为空 [] 或 demo 数据）
+# 期望：JSON 数组（demo 数据已自动 seed）
 
 # 后端聚合统计
 curl -s http://localhost:19091/api/invocations/stats
+
+# 前端 SPA 路由（Spring Boot SpaForwardConfig forward 到 index.html）
+curl -sI http://localhost:19091/playground | head -1   # HTTP/1.1 200
+curl -sI http://localhost:19091/rules      | head -1   # HTTP/1.1 200
 ```
 
 ### 3.2 从外部访问
@@ -321,7 +325,7 @@ cd .. && rm -rf ontos-rule   # 删代码（数据已经 down -v 没了）
 
 ---
 
-## 附：完整目录布局
+## 附：完整目录布局（Docker 方案）
 
 部署完成后服务器 `/opt/ontos-rule/` 下应该是：
 
@@ -339,4 +343,153 @@ ontos-rule/
 │   ├── Dockerfile
 │   └── src/ ...
 └── ...
+```
+
+---
+
+# 备选方案 · 裸 jar + systemd（内网无 docker 时）
+
+如果服务器**装不上 docker / 拉不到 docker hub**（本项目内网部署实际遇到的情况），用这套。本地 build 一个 fat jar（含 Vue 静态资源），scp 上服务器，systemd 托管。
+
+## A. 本地一次性 build（你 Windows 上）
+
+前提：Windows 装了 JDK 21。
+
+```powershell
+# 1. 把 Vue dist 复制到 backend 静态资源里
+cd D:\gitRepository\ontos-rule\ontos-rule-web
+npm run build
+Copy-Item -Recurse -Force dist\* `
+  ..\ontos-rule-business\src\main\resources\static\
+
+# 2. 用 JDK 21 build fat jar（约 15 秒，已有 .m2 缓存）
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.2"
+$env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+cd D:\gitRepository\ontos-rule
+mvn -pl ontos-rule-business -am clean package -DskipTests
+
+# 3. jar 在这里（约 57 MB）
+ls ontos-rule-business\target\ontos-rule-business-*.jar
+```
+
+## B. 服务器一次性配置
+
+### B1 · 装 JDK 21
+
+```bash
+cd /opt
+curl -L -o jdk21.tar.gz \
+  https://github.com/adoptium/temurin21-binaries/releases/download/jdk-21.0.5%2B11/OpenJDK21U-jdk_x64_linux_hotspot_21.0.5_11.tar.gz
+tar xzf jdk21.tar.gz && mv jdk-21.0.5+11 jdk-21 && rm jdk21.tar.gz
+cat > /etc/profile.d/jdk21.sh <<'EOF'
+export JAVA_HOME=/opt/jdk-21
+export PATH=$JAVA_HOME/bin:$PATH
+EOF
+chmod +x /etc/profile.d/jdk21.sh && source /etc/profile.d/jdk21.sh
+java -version    # 期望 openjdk 21.0.5
+```
+
+### B2 · 防火墙 + 目录
+
+```bash
+firewall-cmd --permanent --add-port=19091/tcp && firewall-cmd --reload
+mkdir -p /opt/ontos-rule/data
+```
+
+### B3 · scp 上 jar（在 Windows 跑）
+
+```powershell
+scp D:\gitRepository\ontos-rule\ontos-rule-business\target\ontos-rule-business-0.1.0-SNAPSHOT.jar `
+    root@10.10.104.98:/opt/ontos-rule/app.jar
+```
+
+### B4 · systemd unit
+
+```bash
+cat > /etc/systemd/system/ontos-rule.service <<'EOF'
+[Unit]
+Description=ONTOS Rule Engine (Spring Boot + Vue)
+After=network.target
+
+[Service]
+Type=simple
+User=root
+WorkingDirectory=/opt/ontos-rule
+Environment="JAVA_HOME=/opt/jdk-21"
+ExecStart=/opt/jdk-21/bin/java -XX:MaxRAMPercentage=75 -XX:+UseG1GC -Dfile.encoding=UTF-8 -jar /opt/ontos-rule/app.jar --server.port=19091
+Restart=on-failure
+RestartSec=5
+SuccessExitStatus=143
+StandardOutput=append:/var/log/ontos-rule.log
+StandardError=append:/var/log/ontos-rule.log
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl daemon-reload
+systemctl enable --now ontos-rule
+systemctl status ontos-rule
+```
+
+## C. 日常运维 5 条命令
+
+```bash
+systemctl start    ontos-rule   # 启
+systemctl stop     ontos-rule   # 停
+systemctl restart  ontos-rule   # 重启
+systemctl status   ontos-rule   # 看状态
+tail -f /var/log/ontos-rule.log # 看日志（Ctrl+C 退出）
+```
+
+## D. 升级流程（代码更新 → 重新部署）
+
+```powershell
+# 1. 你 Windows 本地重新 build
+cd D:\gitRepository\ontos-rule\ontos-rule-web; npm run build
+Copy-Item -Recurse -Force dist\* ..\ontos-rule-business\src\main\resources\static\
+cd ..
+$env:JAVA_HOME = "C:\Program Files\Java\jdk-21.0.2"; $env:PATH = "$env:JAVA_HOME\bin;$env:PATH"
+mvn -pl ontos-rule-business -am clean package -DskipTests
+
+# 2. scp + 重启
+scp ontos-rule-business\target\ontos-rule-business-0.1.0-SNAPSHOT.jar root@10.10.104.98:/opt/ontos-rule/app.jar
+ssh root@10.10.104.98 'systemctl restart ontos-rule'
+```
+
+## E. 验证（首次 + 升级后都跑一遍）
+
+```bash
+# 服务器侧
+curl -sI http://localhost:19091/                 # HTTP/1.1 200（Vue 首页）
+curl -sI http://localhost:19091/playground       # HTTP/1.1 200（SPA 路由）
+curl -sI http://localhost:19091/rules            # HTTP/1.1 200（SPA 路由）
+curl -s  http://localhost:19091/api/rules | head # JSON 数组
+
+# 你浏览器
+# http://10.10.104.98:19091/playground   → 看到 Playground 页
+# http://10.10.104.98:19091/rules         → 看到规则管理表格
+```
+
+## F. 备份 H2 数据
+
+```bash
+# 服务器上做备份（停一下更稳）
+systemctl stop ontos-rule
+tar czf ~/ontosrule-$(date +%F).tar.gz /opt/ontos-rule/data
+systemctl start ontos-rule
+```
+
+## G. 这套方案目录布局
+
+```
+服务器 /opt/
+├── jdk-21/                              ← JDK 21 解压
+└── ontos-rule/
+    ├── app.jar                          ← scp 上来的 fat jar（含 Vue 前端）
+    └── data/                            ← H2 数据
+        └── ontosrule.mv.db
+
+服务器 /etc/
+├── profile.d/jdk21.sh                   ← PATH/JAVA_HOME
+└── systemd/system/ontos-rule.service    ← 服务单元
 ```

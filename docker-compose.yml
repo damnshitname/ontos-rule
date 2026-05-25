@@ -48,7 +48,7 @@ services:
     networks:
       - ontos-net
     healthcheck:
-      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/admin/info || exit 1"]
+      test: ["CMD-SHELL", "curl -fsS http://localhost:8080/api/rules || exit 1"]
       interval: 30s
       timeout: 5s
       retries: 3

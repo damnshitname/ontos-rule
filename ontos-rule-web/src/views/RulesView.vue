@@ -156,8 +156,7 @@ onUnmounted(() => {
                 v-if="rules.length === 0"
                 icon="∅"
                 title="还没有任何规则"
-                subtitle="点击下方按钮一键加载演示数据，或右上角新建规则"
-                @reseeded="load"
+                subtitle="点击右上角 + 新建规则；或顶栏 [↺ 重置 demo 数据] 加载演示数据"
               />
               <div v-else class="empty-search">
                 <div style="font-size: 32px; color: var(--fg-3);">⌕</div>

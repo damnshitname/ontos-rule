@@ -4,8 +4,6 @@ import { useRoute, useRouter } from 'vue-router'
 import { rulesApi } from '@/api/rules'
 import { runsApi } from '@/api/runs'
 import { qualityApi } from '@/api/quality'
-import { adminApi } from '@/api/admin'
-import { ElMessageBox } from 'element-plus'
 
 const route = useRoute()
 const router = useRouter()
@@ -78,23 +76,6 @@ function openPlayground() {
   window.open('/playground', '_blank')
 }
 
-const reseeding = ref(false)
-async function onReseed() {
-  const ok = await ElMessageBox.confirm(
-    '会清空当前所有 mock 数据（规则 / 执行历史 / 评分 / 权重 / 违规）后重新种入演示数据。继续吗？',
-    '重置 demo 数据',
-    { type: 'warning', confirmButtonText: '确定重置', cancelButtonText: '取消' }
-  ).catch(() => false)
-  if (ok === false) return
-  reseeding.value = true
-  try {
-    const r = await adminApi.reseed(true)
-    ElMessage.success(`${r.message} · ${r.rules} 规则 / ${r.runs} 执行 / ${r.scores} 评分`)
-    await refreshMetrics()
-    // 通知子页面也刷新（如果当前在某个 Tab）
-    window.dispatchEvent(new CustomEvent('ontos-reseed'))
-  } finally { reseeding.value = false }
-}
 </script>
 
 <template>
@@ -188,11 +169,6 @@ async function onReseed() {
           </div>
           <div class="flex items-center gap-3 text-xs font-mono">
             <span class="label">由 RULE-CORE 0.1.0 驱动</span>
-            <el-tooltip content="清空所有 mock 数据并重新种入（演示用）" placement="bottom">
-              <button class="btn btn-sm" :disabled="reseeding" @click="onReseed">
-                {{ reseeding ? '重置中…' : '[ ↺ 重置 demo 数据 ]' }}
-              </button>
-            </el-tooltip>
             <button class="btn btn-sm" @click="openPlayground">[ 调试沙箱 → ]</button>
           </div>
         </div>

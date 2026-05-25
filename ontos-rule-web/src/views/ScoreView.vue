@@ -159,8 +159,7 @@ onUnmounted(() => {
             v-else
             icon="◐"
             title="暂无项目评分"
-            subtitle="点击 [ 手动 RUN ] 触发重算，或一键加载演示数据"
-            @reseeded="load"
+            subtitle="点击 [ 手动 RUN ] 触发重算；或顶栏 [↺ 重置 demo 数据] 加载演示数据"
           />
         </div>
 

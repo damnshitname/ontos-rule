@@ -25,6 +25,10 @@ vite.config.ts.timestamp-*
 # ontos-rule-web/src/types/auto-imports.d.ts
 # ontos-rule-web/src/types/components.d.ts
 
+# 把 web/dist 拷到 backend static 是 fat-jar 构建步骤的产物，不入库
+# （每次 npm run build + cp 会重新生成）
+ontos-rule-business/src/main/resources/static/
+
 # ============= IDE / Editor =============
 .idea/
 *.iml

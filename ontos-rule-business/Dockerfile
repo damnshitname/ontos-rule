@@ -57,5 +57,4 @@ ENV JAVA_OPTS="-XX:MaxRAMPercentage=75 -XX:+UseG1GC -XX:+UseContainerSupport"
 ENTRYPOINT ["sh", "-c", "exec java $JAVA_OPTS -Dfile.encoding=UTF-8 -jar /app/app.jar"]
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=60s --retries=3 \
-    CMD curl -fsS http://localhost:8080/actuator/health || \
-        curl -fsS http://localhost:8080/api/admin/info || exit 1
+    CMD curl -fsS http://localhost:8080/api/rules || exit 1
